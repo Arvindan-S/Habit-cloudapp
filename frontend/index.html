@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Habit Tracker</title>
+</head>
+<body>
+
+  <h1>Habit Tracker 🚀</h1>
+
+  <input id="habitInput" placeholder="Enter habit" />
+  <button onclick="addHabit()">Add</button>
+
+  <ul id="list"></ul>
+
+  <script>
+    const API = "https://ij5m6bg1me.execute-api.ap-south-1.amazonaws.com";
+
+    async function loadHabits() {
+      const res = await fetch(API + "/habits");
+      const data = await res.json();
+
+      const list = document.getElementById("list");
+      list.innerHTML = "";
+
+      data.forEach(habit => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          ${habit.name} - ${habit.completed ? "✅" : "❌"}
+          <button onclick="toggle('${habit.id}')">Toggle</button>
+          <button onclick="deleteHabit('${habit.id}')">Delete</button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    async function addHabit() {
+      const name = document.getElementById("habitInput").value;
+
+      await fetch(API + "/habits", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name })
+      });
+
+      document.getElementById("habitInput").value = "";
+      loadHabits();
+    }
+
+    async function toggle(id) {
+      await fetch(API + "/habits/" + id, { method: "PUT" });
+      loadHabits();
+    }
+
+    async function deleteHabit(id) {
+      await fetch(API + "/habits/" + id, { method: "DELETE" });
+      loadHabits();
+    }
+
+    loadHabits();
+  </script>
+
+</body>
+</html>
